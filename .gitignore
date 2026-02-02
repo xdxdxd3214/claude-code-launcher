@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Backups
+*.bak
+*.tmp
+*~
+
+# Token files
+.claude-token
+.claude/
