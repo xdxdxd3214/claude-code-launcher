@@ -20,23 +20,26 @@ REPO_URL="https://raw.githubusercontent.com/ash3in/claude-code-launcher/main"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
+ORANGE='\033[0;33m' # Fallback for brown/orange
 BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m' # No Color
 
+# Try to use 256 colors for better Claude Orange if supported
+if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+    ORANGE='\033[38;5;208m'
+fi
+
 print_banner() {
     echo ""
-    printf "${MAGENTA}${BOLD}"
+    printf "${ORANGE}${BOLD}"
     echo "  ╭─────────────────────────────────────────────╮"
     echo "  │                                             │"
-    echo "  │   ✴  Claude Code Quick Launcher  ✴          │"
-    echo "  │                                             │"
-    echo "  │   Secure JWT-based launcher for             │"
-    echo "  │   enterprise Claude Code users              │"
+    echo "  │   ✴  Claude Code Quick Launcher             │"
     echo "  │                                             │"
     echo "  ╰─────────────────────────────────────────────╯"
     printf "${NC}"
@@ -49,7 +52,7 @@ info()    { printf "${CYAN}ℹ ${NC}%s\n" "$1"; }
 success() { printf "${GREEN}✓ ${NC}%s\n" "$1"; }
 warn()    { printf "${YELLOW}⚠️ ${NC}%s\n" "$1"; }
 error()   { printf "${RED}✗ ${NC}%s\n" "$1"; }
-prompt()  { printf "${MAGENTA}? ${NC}${BOLD}%s${NC} " "$1"; }
+prompt()  { printf "${ORANGE}▶ ${NC}${BOLD}%s${NC} " "$1"; }
 
 sanitize_for_shell() {
     local input="$1"
@@ -172,7 +175,7 @@ run_wizard() {
 
     prompt "ANTHROPIC_BASE_URL (your corporate endpoint):"
     echo ""
-    printf "  ${DIM}Example: https://anthropic.company.com${NC}\n"
+    printf "  ${DIM}Example: https://anthropic.internal.company.com${NC}\n"
     printf "  "
     read -r base_url < /dev/tty
     if [[ -n "$base_url" ]]; then
@@ -281,6 +284,13 @@ cc() {
     _cc_yellow() { printf '\''\033[33m%s\033[0m\n'\'' "$1"; }
     _cc_cyan()   { printf '\''\033[36m%s\033[0m\n'\'' "$1"; }
     _cc_bold()   { printf '\''\033[1m%s\033[0m\n'\'' "$1"; }
+    _cc_orange() { 
+        if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+             printf '\''\033[38;5;208m%s\033[0m\n'\'' "$1"
+        else
+             printf '\''\033[33m%s\033[0m\n'\'' "$1"
+        fi
+    }
 
     _cc_validate_jwt() {
         local jwt="$1"
@@ -316,8 +326,15 @@ cc() {
     if [[ "$1" == "-t" || "$1" == "--token" ]]; then
         [[ -n "$2" ]] && {
             _cc_red "✗ SECURITY WARNING: Never pass tokens as arguments!"
-            _cc_cyan "Enter token securely below (input hidden):"
+            _cc_red "  Tokens in arguments are saved to shell history (~/.zsh_history)"
+            _cc_red "  and visible in process list (ps aux)"
+            echo ""
+            _cc_yellow "Removing command from shell history..."
+            # Try to remove from history
+            fc -p 2>/dev/null || true
+            echo ""
         }
+        _cc_orange "Enter token securely below (input hidden):"
         printf "Token: "; read -rs token; echo ""
         if ! _cc_validate_jwt "$token"; then
             _cc_red "✗ Invalid token format (not a valid JWT)"
@@ -333,22 +350,23 @@ cc() {
     fi
 
     if [[ "$1" == "-s" || "$1" == "--status" ]]; then
-        _cc_bold "Claude Code Quick Launcher Status"; echo ""
+        _cc_orange "Claude Code Quick Launcher Status"; echo ""
         if [[ -f "$token_file" ]]; then
             local perms=$(stat -f "%Lp" "$token_file" 2>/dev/null || stat -c "%a" "$token_file" 2>/dev/null)
             [[ "$perms" != "600" ]] && { _cc_red "✗ Insecure permissions: $perms"; chmod 600 "$token_file"; _cc_green "✓ Fixed"; } || _cc_green "✓ Permissions: $perms"
             _cc_check_expiry "$(cat "$token_file")"
         else
-            _cc_red "✗ No token stored. Run: cc -t"
+            _cc_red "✗ No token stored"
+            _cc_orange "  Run: cc -t"
         fi
         echo ""
         [[ -n "$ANTHROPIC_BASE_URL" ]] && _cc_green "✓ Endpoint: $ANTHROPIC_BASE_URL" || _cc_yellow "⚠️ Using default endpoint"
-        command -v claude &>/dev/null && _cc_green "✓ Claude CLI installed" || _cc_red "✗ Claude CLI not found"
+        command -v claude &>/dev/null && _cc_green "✓ Claude CLI installed" || { _cc_red "✗ Claude CLI not found"; _cc_orange "  Run: npm install -g @anthropic-ai/claude-code"; }
         return 0
     fi
 
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-        _cc_bold "cc - Claude Code Quick Launcher"; echo ""
+        _cc_orange "cc - Claude Code Quick Launcher"; echo ""
         echo "Usage:"
         echo "  cc              Launch Claude Code"
         echo "  cc -t, --token  Update token (secure input)"
@@ -357,12 +375,12 @@ cc() {
         return 0
     fi
 
-    [[ ! -f "$token_file" ]] && { _cc_red "✗ No token found. Run: cc -t"; return 1; }
+    [[ ! -f "$token_file" ]] && { _cc_red "✗ No token found"; _cc_orange "  Run: cc -t"; return 1; }
     local perms=$(stat -f "%Lp" "$token_file" 2>/dev/null || stat -c "%a" "$token_file" 2>/dev/null)
     [[ "$perms" != "600" ]] && { _cc_yellow "⚠️ Fixing permissions..."; chmod 600 "$token_file"; }
     token="$(cat "$token_file")"
-    _cc_validate_jwt "$token" || { _cc_red "✗ Invalid stored token. Run: cc -t"; return 1; }
-    _cc_check_expiry "$token" || { _cc_cyan "Run: cc -t to update"; return 1; }
+    _cc_validate_jwt "$token" || { _cc_red "✗ Invalid stored token"; _cc_orange "  Run: cc -t"; return 1; }
+    _cc_check_expiry "$token" || { _cc_orange "  Run: cc -t to update your token"; return 1; }
 
     export ANTHROPIC_AUTH_TOKEN="$token"
     [[ -n "$CC_DISABLE_PROXY" ]] && unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy

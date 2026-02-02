@@ -15,6 +15,13 @@ cc() {
     _cc_yellow() { printf '\033[33m%s\033[0m\n' "$1"; }
     _cc_cyan()   { printf '\033[36m%s\033[0m\n' "$1"; }
     _cc_bold()   { printf '\033[1m%s\033[0m\n' "$1"; }
+    _cc_orange() { 
+        if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+             printf '\033[38;5;208m%s\033[0m\n' "$1"
+        else
+             printf '\033[33m%s\033[0m\n' "$1"
+        fi
+    }
 
     _cc_validate_jwt() {
         local jwt="$1"
@@ -89,7 +96,7 @@ cc() {
             echo ""
         fi
 
-        _cc_cyan "Enter token securely below (input hidden):"
+        _cc_orange "Enter token securely below (input hidden):"
         printf "Token: "
         read -rs token
         echo ""
@@ -125,7 +132,7 @@ cc() {
 
 
     if [[ "$1" == "-s" || "$1" == "--status" ]]; then
-        _cc_bold "Claude Code Quick Launcher Status"
+        _cc_orange "Claude Code Quick Launcher Status"
         echo ""
 
         if [[ -f "$token_file" ]]; then
@@ -143,7 +150,7 @@ cc() {
             _cc_check_expiry "$(cat "$token_file")"
         else
             _cc_red "✗ No token stored"
-            _cc_cyan "  Run: cc -t"
+            _cc_orange "  Run: cc -t"
         fi
 
         echo ""
@@ -159,7 +166,7 @@ cc() {
             _cc_green "✓ Claude CLI installed"
         else
             _cc_red "✗ Claude CLI not found"
-            _cc_cyan "  Run: npm install -g @anthropic-ai/claude-code"
+            _cc_orange "  Run: npm install -g @anthropic-ai/claude-code"
         fi
 
         return 0
@@ -167,11 +174,11 @@ cc() {
 
 
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-        _cc_bold "cc - Claude Code Quick Launcher"
+        _cc_orange "cc - Claude Code Quick Launcher"
         echo ""
         echo "A secure launcher for enterprise users with JWT authentication."
         echo ""
-        _cc_cyan "Usage:"
+        _cc_bold "Usage:"
         echo "  cc              Launch Claude Code"
         echo "  cc -t, --token  Update token (secure hidden input)"
         echo "  cc -s, --status Check token status, expiry, and config"
@@ -195,7 +202,7 @@ cc() {
 
     if [[ ! -f "$token_file" ]]; then
         _cc_red "✗ No token found"
-        _cc_cyan "  Run: cc -t"
+        _cc_orange "  Run: cc -t"
         return 1
     fi
 
@@ -212,13 +219,13 @@ cc() {
 
     if ! _cc_validate_jwt "$token"; then
         _cc_red "✗ Stored token is invalid"
-        _cc_cyan "  Run: cc -t"
+        _cc_orange "  Run: cc -t"
         return 1
     fi
 
 
     if ! _cc_check_expiry "$token"; then
-        _cc_cyan "  Run: cc -t to update your token"
+        _cc_orange "  Run: cc -t to update your token"
         return 1
     fi
 
